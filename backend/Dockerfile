@@ -16,4 +16,6 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3001
-CMD ["node", "dist/main.js"]
+
+# Automatically detect whether main.js is in dist/ or dist/src/
+CMD ["sh", "-c", "if [ -f dist/main.js ]; then node dist/main.js; else node dist/src/main.js; fi"]
