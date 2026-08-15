@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "./Navbar"; // <-- Import our new Navbar
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Matrimony App",
-  description: "Find your perfect match today.",
+  title: "Matrimony Platform",
+  description: "A full-stack matrimony connection platform",
+  manifest: "/manifest.json",
+  themeColor: "#e11d48",
 };
 
 export default function RootLayout({
@@ -17,10 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <Navbar /> {/* <-- Place it right above the children (the page content) */}
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
