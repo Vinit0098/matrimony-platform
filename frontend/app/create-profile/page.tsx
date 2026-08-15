@@ -5,9 +5,13 @@ import { useRouter } from "next/navigation";
 
 export default function CreateProfile() {
   const router = useRouter();
-  const [users, setUsers] = useState([]);
   
-  // New state to hold our selected image file
+  // 1. Dynamic API URL for Vercel and Localhost
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+  // 2. TypeScript error fixed with <any[]>
+  const [users, setUsers] = useState<any[]>([]);
+  
   const [photo, setPhoto] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -26,7 +30,8 @@ export default function CreateProfile() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:3001/users")
+    // 3. Replaced localhost with dynamic API_URL
+    fetch(`${API_URL}/users`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setUsers(data);
@@ -38,7 +43,6 @@ export default function CreateProfile() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // New handler specifically for the file input
   const handleFileChange = (e: any) => {
     if (e.target.files && e.target.files[0]) {
       setPhoto(e.target.files[0]);
@@ -50,22 +54,18 @@ export default function CreateProfile() {
     setIsSubmitting(true);
 
     try {
-      // Because we are sending a file, we must use FormData instead of JSON!
       const submitData = new FormData();
       
-      // Add all the text fields
       Object.keys(formData).forEach((key) => {
         submitData.append(key, (formData as any)[key]);
       });
 
-      // Add the photo if the user selected one
       if (photo) {
         submitData.append("photo", photo);
       }
 
-      // Notice we DO NOT set the 'Content-Type' header here. 
-      // The browser automatically sets it to 'multipart/form-data' when it sees FormData!
-      const res = await fetch("http://localhost:3001/profiles", {
+      // 4. Replaced localhost with dynamic API_URL
+      const res = await fetch(`${API_URL}/profiles`, {
         method: "POST",
         body: submitData,
       });
@@ -163,7 +163,6 @@ export default function CreateProfile() {
             <textarea name="bio" value={formData.bio} onChange={handleChange} required rows={3} className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-rose-500"></textarea>
           </div>
 
-          {/* --- THE NEW PHOTO UPLOAD FIELD --- */}
           <div className="p-4 bg-rose-50 border border-rose-100 rounded-lg">
             <label className="block text-sm font-bold text-rose-800 mb-2">Upload Profile Photo</label>
             <input 
