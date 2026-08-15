@@ -1,0 +1,101 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  // Assuming you have your url configured either here or passed in via Prisma adapter!
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  phone        String   @unique
+  passwordHash String
+  role         Role     @default(USER)
+  status       Status   @default(ACTIVE)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // This links the User to their Profile
+  profile      Profile?
+
+  // NEW: These lines tell Prisma that a user can send and receive interests
+  sentInterests     Interest[] @relation("SentInterests")
+  receivedInterests Interest[] @relation("ReceivedInterests")
+
+  sentMessages      Message[] @relation("SentMessages")
+  receivedMessages  Message[] @relation("ReceivedMessages")
+}
+
+model Profile {
+  id            String   @id @default(uuid())
+  firstName     String
+  lastName      String
+  gender        String
+  dateOfBirth   DateTime
+  
+  maritalStatus String
+  motherTongue  String
+  city          String
+  country       String
+  
+  religion      String
+  bio           String
+  photo         String?  
+  
+  // This links the Profile back to the User
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// NEW: The Interest Model
+model Interest {
+  id          String   @id @default(uuid())
+  status      String   @default("PENDING") // Can be PENDING, ACCEPTED, or REJECTED
+  createdAt   DateTime @default(now())
+
+  // Who sent the interest?
+  senderId    String
+  sender      User     @relation("SentInterests", fields: [senderId], references: [id])
+
+  // Who is receiving the interest?
+  receiverId  String
+  receiver    User     @relation("ReceivedInterests", fields: [receiverId], references: [id])
+
+  // A rule so you can't spam the same person with multiple requests
+  @@unique([senderId, receiverId])
+}
+
+
+// NEW: The Real-Time Chat Message Model
+model Message {
+  id         String   @id @default(uuid())
+  content    String
+  reaction   String?
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  senderId   String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+
+  receiverId String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
+
+
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  BANNED
+}
