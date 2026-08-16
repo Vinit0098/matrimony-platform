@@ -6,6 +6,10 @@ import Link from "next/link";
 
 export default function Register() {
   const router = useRouter();
+  
+  // 1. Dynamic API URL for Vercel/Render and Localhost
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://matrimony-platform-elgs.onrender.com";
+
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
@@ -18,7 +22,8 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:3001/users", {
+      // 2. Replaced localhost with the dynamic API_URL
+      const res = await fetch(`${API_URL}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
